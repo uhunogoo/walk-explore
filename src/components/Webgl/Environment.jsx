@@ -10,6 +10,7 @@ function Environment() {
   // useHelper( directionalLight, THREE.DirectionalLightHelper, 1 );
 
   useFrame(( state, delta ) => {
+    // Update the light position and target
     directionalLight.current.position.z = state.camera.position.z + 1 - 4;
     directionalLight.current.target.position.z = state.camera.position.z - 6;
     directionalLight.current.target.updateMatrixWorld();

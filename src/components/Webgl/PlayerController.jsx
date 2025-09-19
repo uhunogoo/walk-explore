@@ -10,7 +10,7 @@ import { useKeyboardControls } from '@react-three/drei';
 import useGame from '@stores/use-game';
 
 
-function PlayerController({ player, children }) {
+function PlayerController({ playerRef, children }) {
   const { impolseValue, torqueValue } = useControls( 'Player', { 
     impolseValue: { value: 0.3, min: 0.001, max: 4, step: 0.01 }, 
     torqueValue: { value: 0.15, min: 0.001, max: 4, step: 0.01 }
@@ -20,29 +20,30 @@ function PlayerController({ player, children }) {
   const { rapier, world } = useRapier();
 
   // stores
+  // const player = useGame( (state) => state.player );
   const restart = useGame( (state) => state.restart );
 
   // jump
   function jump() {
-    const origin = player.current.translation();
+    const origin = playerRef.current.translation();
     origin.y -= 0.31;
     const direction = { x: 0, y: -1, z: 0 };
     const ray = new rapier.Ray(origin, direction);
-    const hit = world.castRay(ray, 10, true);
+    const hit = world.castRay(ray, 10, true, null, null, null, playerRef.current);
 
     if (hit.timeOfImpact < 0.15) {
-      player.current.applyImpulse({ x: 0, y: 0.5, z: 0 }); 
+      playerRef.current.applyImpulse({ x: 0, y: 0.5, z: 0 });
     }
   }
 
-  function reset( player ) {
-    if (!player) return;
-    player.resetForces(true);  // Reset the forces to zero
-    player.resetTorques(true); // Reset the torques to zero
+  function reset() {
+    if (!playerRef.current) return;
+    playerRef.current.resetForces(true);  // Reset the forces to zero
+    playerRef.current.resetTorques(true); // Reset the torques to zero
 
-    player.setTranslation({ x: 0, y: 1, z: 0.5 });
-    player.setLinvel({ x: 0, y: 0, z: 0 });
-    player.setAngvel({ x: 0, y: 0, z: 0 });
+    playerRef.current.setTranslation({ x: 0, y: 1, z: 0.5 });
+    playerRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+    playerRef.current.setAngvel({ x: 0, y: 0, z: 0 });
   };
 
   React.useEffect(() => {
@@ -57,7 +58,7 @@ function PlayerController({ player, children }) {
       (state) => state.phase,
       (phase) => {
         if ( phase === 'ready' ) {
-          reset( player.current );
+          reset();
         }
       }
     );
@@ -71,10 +72,10 @@ function PlayerController({ player, children }) {
       unsubscribeJump();
       unsubscribeReset();
     } 
-  }, [ subscribeKeys, player ]);
+  }, [ subscribeKeys, playerRef ]);
 
   useFrame((state, delta) => {
-    if ( !player?.current ) return;
+    if ( !playerRef.current ) return;
 
     // movement
     const { forward, backward, leftward, rightward } = getKeys();
@@ -110,10 +111,10 @@ function PlayerController({ player, children }) {
     }
 
     // apply forces
-    player.current.applyImpulse( impulse );
-    player.current.applyTorqueImpulse(torque);
+    playerRef.current.applyImpulse( impulse );
+    playerRef.current.applyTorqueImpulse(torque);
     
-    const playerPosition = player.current.translation();
+    const playerPosition = playerRef.current.translation();
 
     
     // restart

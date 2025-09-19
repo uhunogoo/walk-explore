@@ -3,6 +3,13 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 export default create( subscribeWithSelector( ( set ) => {
   return {
+    groups: {
+      PLAYER: 0x0001,
+      WORLD:  0x0002,
+      SENSOR: 0x0004,
+      ITEM:   0x0008,
+    },
+    player: null,
     blocksCount: 10,
     blocksSeed: 0,
     phase: 'ready',
@@ -19,6 +26,9 @@ export default create( subscribeWithSelector( ( set ) => {
         return { phase: 'ready', blocksSeed: Math.random() };
       }
       return {}; 
-   } ),
+    } ),
+    setPlayer: ( player ) => set( (state) => {
+      return { player };
+    } ),
   } 
 }) );

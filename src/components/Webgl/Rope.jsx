@@ -1,7 +1,13 @@
 import React from 'react';
 
-import { BallCollider, RigidBody, useRopeJoint } from '@react-three/rapier';
+// 3D libraries
+import { BallCollider, interactionGroups, RigidBody, useRopeJoint } from '@react-three/rapier';
+
+// Utils
 import { range } from '@lib/utils';
+
+// Stores
+import useGame from '@stores/use-game';
 
 const RopeJoint = ({ a, b, segmentLength = 1 }) => {
   useRopeJoint(a, b, [ [0, 0, 0], [0, 0, 0], segmentLength ]);
@@ -14,23 +20,14 @@ function Rope({ length = 1, nodes = 2, position = [0, 0, 0], ...props }) {
     [ ...range( nodes ).map( () => React.createRef() ) ]
   );
 
+  // Stores
+  const groups = useGame( (state) => state.groups );
+
   // Parameters
   const segmentLength = length / ( nodes - 1 ); // Segment count is one less than nodes count
   const dampings = { linearDamping: 2, angularDamping: 2 };
 
-  function handleCollisionEnter({ manifold, target, other }) {
-    const rigidBodyObject = other.rigidBodyObject;
-    const name = rigidBodyObject.name;
 
-    if (name === 'player') {
-      console.log('Collision with player');
-    }
-  }
-
-  React.useEffect(() => {
-    
-  }, []);
-  
   return (
     <group dispose={ null }>
       { refs.current.map( ( ref, id ) =>
@@ -45,7 +42,7 @@ function Rope({ length = 1, nodes = 2, position = [0, 0, 0], ...props }) {
           { ...dampings }
           { ...props } 
         >
-          <BallCollider args={[0.02]} />
+          <BallCollider args={[0.02]} collisionGroups={ interactionGroups( groups.ITEM, [ groups.SENSOR, groups.WORLD ]) } />
           { id > 0 && <RopeJoint a={ refs.current[id - 1] } b={ refs.current[id] } segmentLength={ segmentLength } /> }
         </RigidBody>
       ) }
