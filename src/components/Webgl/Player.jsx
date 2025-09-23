@@ -1,7 +1,7 @@
 import React from 'react';
 
 // 3D libraries
-import { BallCollider, interactionGroups, RigidBody } from '@react-three/rapier';
+import { BallCollider, RigidBody } from '@react-three/rapier';
 import { useKeyboardControls } from '@react-three/drei';
 
 // Stores
@@ -17,9 +17,9 @@ function Player() {
   const [ subscribeKeys ] = useKeyboardControls();
 
   // stores
-  const groups = useGame( (state) => state.groups );
   const start = useGame( (state) => state.start );
   const setPlayer = useGame( (state) => state.setPlayer );
+  const interactionGroups = useGame( (state) => state.interactionGroups );
 
   React.useEffect(() => {
     const unsubscribeAny = subscribeKeys(() => {
@@ -46,8 +46,14 @@ function Player() {
         angularDamping={0.5}
         position={[ 0, 1, 0 ]}
       >
-        <BallCollider args={[ 0.3 ]} collisionGroups={ interactionGroups( groups.WORLD ) } />
-        <PlayerSensor collisionGroups={ interactionGroups( groups.SENSOR, [ groups.ITEM ]) } />
+        <BallCollider 
+          args={[ 0.3 ]} 
+          collisionGroups={ interactionGroups.player } 
+        />
+        <PlayerSensor 
+          radius={ 0.4 } 
+          collisionGroups={ interactionGroups.sensor }
+        />
 
         {/* Player mesh */}
         <mesh castShadow>
