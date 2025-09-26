@@ -8,7 +8,7 @@ import { BallCollider, RigidBody, useRopeJoint } from '@react-three/rapier';
 import { range } from '@lib/utils';
 
 // Stores
-import useGame from '@stores/use-game';
+import { colisionGroups } from '@stores/use-game';
 
 function Rope({ length = 1, nodes = 2, position = [0, 0, 0], ...props }) {
   // Parameters
@@ -20,9 +20,6 @@ function Rope({ length = 1, nodes = 2, position = [0, 0, 0], ...props }) {
   const refs = React.useRef(
     [ ...range( nodes ).map( () => React.createRef() ) ]
   );
-
-  // Stores
-  const interactionGroups = useGame( (state) => state.interactionGroups );
 
   return (
     <group dispose={ null }>
@@ -41,7 +38,7 @@ function Rope({ length = 1, nodes = 2, position = [0, 0, 0], ...props }) {
           {/* Rope node collider */}
           <BallCollider 
             args={[0.02]}
-            collisionGroups={ interactionGroups.item } 
+            collisionGroups={ colisionGroups.item } 
           />
 
           {/* Rope joint */}

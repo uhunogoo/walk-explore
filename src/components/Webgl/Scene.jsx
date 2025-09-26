@@ -61,6 +61,7 @@ function Scene() {
 
           </Physics>
         </React.Suspense>
+
         <OrbitControls makeDefault />
       </Canvas>
     </KeyboardControls>

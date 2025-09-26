@@ -8,31 +8,30 @@ import { BallCollider } from '@react-three/rapier';
 
 function PlayerSensor({ radius = null, ...delegated }) {
   const radiusValue = radius || 0.4;
-  
-  // const playerSensorRef = React.useRef();
-  // const player = useGame( (state) => state.player );
-  const [ intersectedObjects, setIntersectedObjects ] = React.useState( [] );
 
   function handleIntersectionEnter({ manifold, target, other }) {
-    const rigidBodyObject = other.rigidBodyObject;
-    console.log( rigidBodyObject );
-  }
+    // Enable the rigid body
+    other.rigidBody.wakeUp();
+    other.collider.setSensor( true );
 
+    console.log( other )
+  }
+  
   function handleIntersectionExit({ manifold, target, other }) {
-    console.log( exit )
+    // Disable the rigid body
+    other.rigidBody.sleep();
+    other.collider.setSensor( false );
+    console.log( 2 )
+    // other.rigidBodyObject.setSensor( false );
   }
-
-  React.useEffect(() => {
-    console.log( intersectedObjects );
-  }, [ intersectedObjects ]);
-
+  
   return (
     <BallCollider 
       sensor
       args={[ radiusValue ]} 
       mass={ 0 }
       onIntersectionEnter={ handleIntersectionEnter }
-      // onIntersectionExit={ handleIntersectionExit }
+      onIntersectionExit={ handleIntersectionExit }
       { ...delegated }
     />
   )

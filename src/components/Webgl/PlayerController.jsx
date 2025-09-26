@@ -3,28 +3,33 @@ import React from 'react';
 // 3D libraries
 import { useControls } from 'leva';
 import { useFrame } from '@react-three/fiber';
-import { useRapier } from '@react-three/rapier';
+import { RigidBody, useRapier } from '@react-three/rapier';
 import { useKeyboardControls } from '@react-three/drei';
 
 // stores
 import useGame from '@stores/use-game';
 
+// components
+// import { PlayerContext } from '@components/Webgl/PlayerProvider';
 
-function PlayerController({ playerRef, children }) {
+function PlayerController({ ref, children, ...delegated }) {
   const { impolseValue, torqueValue } = useControls( 'Player', { 
     impolseValue: { value: 0.3, min: 0.001, max: 4, step: 0.01 }, 
     torqueValue: { value: 0.15, min: 0.001, max: 4, step: 0.01 }
   } );
+  
+  // Ref
+  const playerRef = ref || React.useRef();
 
-  const [ subscribeKeys, getKeys ] = useKeyboardControls();
+  // Rapier and keyboard controls
   const { rapier, world } = useRapier();
+  const [ subscribeKeys, getKeys ] = useKeyboardControls();
 
   // stores
-  // const player = useGame( (state) => state.player );
   const restart = useGame( (state) => state.restart );
 
   // jump
-  function jump() {
+  const jump = React.useCallback(() => {
     const origin = playerRef.current.translation();
     origin.y -= 0.31;
     const direction = { x: 0, y: -1, z: 0 };
@@ -34,9 +39,9 @@ function PlayerController({ playerRef, children }) {
     if (hit.timeOfImpact < 0.15) {
       playerRef.current.applyImpulse({ x: 0, y: 0.5, z: 0 });
     }
-  }
+  }, [ world ]);
 
-  function reset() {
+  const reset = React.useCallback(() => {
     if (!playerRef.current) return;
     playerRef.current.resetForces(true);  // Reset the forces to zero
     playerRef.current.resetTorques(true); // Reset the torques to zero
@@ -44,7 +49,7 @@ function PlayerController({ playerRef, children }) {
     playerRef.current.setTranslation({ x: 0, y: 1, z: 0.5 });
     playerRef.current.setLinvel({ x: 0, y: 0, z: 0 });
     playerRef.current.setAngvel({ x: 0, y: 0, z: 0 });
-  };
+  }, []);
 
   React.useEffect(() => {
     const selectorFunction = ( state ) => state.jump;
@@ -72,7 +77,7 @@ function PlayerController({ playerRef, children }) {
       unsubscribeJump();
       unsubscribeReset();
     } 
-  }, [ subscribeKeys, playerRef ]);
+  }, [ subscribeKeys, reset, jump ]);
 
   useFrame((state, delta) => {
     if ( !playerRef.current ) return;
@@ -123,7 +128,21 @@ function PlayerController({ playerRef, children }) {
     }
   });
   
-  return children;
+  return (
+    <RigidBody 
+      ref={ playerRef} 
+      name="player"
+      canSleep={ false } 
+      colliders={ false }
+      restitution={0.2} 
+      friction={1}
+      linearDamping={0.5}
+      angularDamping={0.5}
+      { ...delegated }
+    >
+      { children }
+    </RigidBody>
+  );
 }
 
 export default PlayerController;

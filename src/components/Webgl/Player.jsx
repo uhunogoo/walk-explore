@@ -1,32 +1,30 @@
 import React from 'react';
 
 // 3D libraries
-import { BallCollider, RigidBody } from '@react-three/rapier';
+import { BallCollider} from '@react-three/rapier';
 import { useKeyboardControls } from '@react-three/drei';
 
 // Stores
-import useGame from '@stores/use-game';
+import useGame, { colisionGroups } from '@stores/use-game';
 
 // Components
-import PlayerController from '@components/Webgl/PlayerController';
-import CameraController from '@components/Webgl/CameraController';
 import PlayerSensor from '@components/Webgl/PlayerSensor';
+import PlayerController from '@components/Webgl/PlayerController';
+import PlayerCamera from '@components/Webgl/PlayerCamera';
 
 function Player() {
+  // Defaults
   const playerRef = React.useRef();
   const [ subscribeKeys ] = useKeyboardControls();
 
-  // stores
+  // Stores
   const start = useGame( (state) => state.start );
-  const setPlayer = useGame( (state) => state.setPlayer );
-  const interactionGroups = useGame( (state) => state.interactionGroups );
 
+  // Start game logic
   React.useEffect(() => {
     const unsubscribeAny = subscribeKeys(() => {
       start();
     });
-
-    setPlayer( playerRef.current );
 
     return () => {
       unsubscribeAny();
@@ -35,24 +33,19 @@ function Player() {
   
   return (
     <>
-      <RigidBody 
-        ref={ playerRef} 
-        name="player"
-        canSleep={ false } 
-        colliders={ false }
-        restitution={0.2} 
-        friction={1}
-        linearDamping={0.5}
-        angularDamping={0.5}
-        position={[ 0, 1, 0 ]}
-      >
+      {/* Player controller */}
+      <PlayerController ref={ playerRef } position={[ 0, 1, 0 ]}>
+
+        {/* Player collider */}
         <BallCollider 
           args={[ 0.3 ]} 
-          collisionGroups={ interactionGroups.player } 
+          collisionGroups={ colisionGroups.player } 
         />
+
+        {/* Player sensor */}
         <PlayerSensor 
-          radius={ 0.4 } 
-          collisionGroups={ interactionGroups.sensor }
+          radius={ 2 } 
+          collisionGroups={ colisionGroups.sensor }
         />
 
         {/* Player mesh */}
@@ -60,13 +53,12 @@ function Player() {
           <icosahedronGeometry args={[ 0.3, 1 ]} />
           <meshStandardMaterial flatShading color="mediumpurple" />
         </mesh>
-      </RigidBody>
+      </PlayerController>
 
-      {/* Controllers */}
-      <PlayerController playerRef={ playerRef } />
-      <CameraController />
+      {/* Player camera */}
+      <PlayerCamera playerRef={ playerRef } />
     </>
-  )
+  );
 }
 
 export default Player;

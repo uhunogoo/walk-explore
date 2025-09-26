@@ -6,17 +6,12 @@ import { useControls } from 'leva';
 import { CameraControls } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 
-// stores
-import useGame from '@stores/use-game';
-
-function CameraController() {
+function PlayerCamera({ playerRef }) {
+  // Debug controls
   const { cameraDisnace, target } = useControls( 'Camera', { 
     cameraDisnace: { value: { x: 0, y: 3.5, z: 4 }, step: 0.1 },
     target: { value: { x: 0, y: 0.25, z: -1 }, step: 0.1 }
   } );
-
-  // stores
-  const player = useGame( (state) => state.player );
 
   // camera
   const ref = React.useRef( null );
@@ -25,10 +20,10 @@ function CameraController() {
   const cameraTarget = React.useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state, delta) => {
-    if ( !player ) return;
+    if ( !playerRef.current ) return;
 
     // control camera position
-    const playerPosition = player.translation();
+    const playerPosition = playerRef.current.translation();
     cameraPosition.copy( playerPosition );
     cameraPosition.y += cameraDisnace.y;
     cameraPosition.z += cameraDisnace.z;
@@ -55,4 +50,4 @@ function CameraController() {
   )
 }
 
-export default CameraController;
+export default PlayerCamera;

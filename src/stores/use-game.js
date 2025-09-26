@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
+// 3D libraries
 import { interactionGroups } from '@react-three/rapier';
+
+
+/**
+ * Interaction groups
+ */
 
 const groups = {
   PLAYER: 0x0001,
@@ -10,15 +16,20 @@ const groups = {
   ITEM:   0x0008,
 }
 
+export const colisionGroups = {
+  player: interactionGroups( groups.PLAYER, [ groups.WORLD, groups.ITEM ] ),
+  world:  interactionGroups( groups.WORLD ),
+  sensor: interactionGroups( groups.SENSOR, [ groups.ITEM ] ),
+  item:   interactionGroups( groups.ITEM, [ groups.SENSOR, groups.PLAYER ] ),
+}
+
+
+/**
+ * Game store
+ */
+
 export default create( subscribeWithSelector( ( set ) => {
   return {
-    interactionGroups: {
-      player: interactionGroups( groups.PLAYER, [ groups.WORLD, groups.ITEM ] ),
-      world:  interactionGroups( groups.WORLD ),
-      sensor: interactionGroups( groups.SENSOR, [ groups.ITEM, groups.SENSOR ] ),
-      item:   interactionGroups( groups.ITEM, [ groups.SENSOR, groups.PLAYER ] ),
-    },
-    player: null,
     blocksCount: 10,
     blocksSeed: 0,
     phase: 'ready',
@@ -35,9 +46,6 @@ export default create( subscribeWithSelector( ( set ) => {
         return { phase: 'ready', blocksSeed: Math.random() };
       }
       return {}; 
-    } ),
-    setPlayer: ( player ) => set( (state) => {
-      return { player };
     } ),
   } 
 }) );
